@@ -9,7 +9,6 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 
 public class MON_Slime extends Entity {
-
     GamePanel gp;
     private int actionLockCounter = 0; // 行動を切り替えるためのタイマー
     
@@ -83,6 +82,10 @@ public class MON_Slime extends Entity {
 
     public void update() {
         setAction(); // 方向を決める
+
+        // 1. 衝突フラグをリセットし、衝突判定を実行
+        collisionOn = false;
+        gp.cChecker.checkTile(this);
 
         // 決まった方向へ進む
         if (direction.equals("up")) { y -= speed; }

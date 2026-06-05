@@ -4,11 +4,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-// --- 【追加】主人公の画像管理用の変数 ---
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
-import java.io.IOException;
-
 public class GamePanel extends JPanel implements Runnable {
 
     /*
@@ -43,8 +38,8 @@ public class GamePanel extends JPanel implements Runnable {
     /*
     勇者の画像設定
     */
-    public BufferedImage playerSheet;
-    public BufferedImage playerImage; // 切り抜いた1コマを保存する変数
+    //public BufferedImage playerSheet;
+    //public BufferedImage playerImage; // 切り抜いた1コマを保存する変数
     
     // GamePanelのメンバ変数に追加（連続衝突を防ぐ無敵時間タイマー）
     int damageCooldown = 0;
@@ -52,35 +47,41 @@ public class GamePanel extends JPanel implements Runnable {
     // プレイヤーの当たり判定用のエリア（四角形）
     // 今回はプレイヤーのサイズ（48x48）と同じ大きさの判定を持たせます
     // 当たり判定で使うため、プレイヤー自身のSolidAreaサイズを明示
-    public java.awt.Rectangle playerSolidArea = new java.awt.Rectangle(0, 0, 48, 48);
+    //public java.awt.Rectangle playerSolidArea = new java.awt.Rectangle(0, 0, 48, 48);
 
     // --- 【追加】タイルマネージャーのインスタンス ---
-    TileManager tileM = new TileManager(this);
+    //TileManager tileM = new TileManager(this);
+    public TileManager tileM;
 
     // --- 【追加】キーハンドラーのインスタンスを作成 ---
-    KeyHandler keyH = new KeyHandler();
+    public KeyHandler keyH = new KeyHandler();
 
     // --- 【追加】衝突したかどうかのインスタンス ---
-    CollisionChecker cChecker = new CollisionChecker(this);
+    //CollisionChecker cChecker = new CollisionChecker(this);
+    public CollisionChecker cChecker;
 
+    // playerのインスタンス
+    public Player player;
     // GamePanel.java のメンバ変数（tileM や keyH の近く）に追加
-    MON_Slime slime = new MON_Slime(this);
+    public MON_Slime slime;
 
     // ゲームのメインスレッド（これがループを回します）
     Thread gameThread;
 
     // プレイヤーの座標
-    int playerX = 200;
-    int playerY = 300;
+    //int playerX = 200;
+    //int playerY = 300;
 
-    int playerSpeed = 4; // 1フレームに動くピクセル数
+    //int playerSpeed = 4; // 1フレームに動くピクセル数
 
+    /*
     public String playerName = "勇者";
     public int playerMaxHp = 100;
     public int playerHp = 100;
     public int playerAttack = 20;
     public int playerDefense = 5;
     public String direction = "right";
+    */
 
     /* コンストラクタ */
     public GamePanel() {
@@ -92,8 +93,15 @@ public class GamePanel extends JPanel implements Runnable {
         this.addKeyListener(keyH); // 作成したキーハンドラーを登録
         this.setFocusable(true);    // パネルにフォーカスを当てて入力を有効にする
     
+        // それぞれのインスタンス作成
+        this.tileM = new TileManager(this);
+        this.cChecker = new CollisionChecker(this);
+        
+        this.player = new Player(this, keyH);
+        this.slime = new MON_Slime(this);
+
         // --- 【追加】ゲーム開始前に画像を読み込む ---
-        getPlayerImage();
+        //getPlayerImage();
 
         // 最初はマップ移動画面からスタート
         gameState = playState;
@@ -144,27 +152,46 @@ public class GamePanel extends JPanel implements Runnable {
         if (gameState == playState) {
             // 1. まず現在のキー入力から「次のマスが壁かどうか」をチェック
             // 壁だった場合は、cCheckerの中で該当する方向のキーフラグが強制的にfalseにされます
-            cChecker.checkTile(this);
+            //cChecker.checkTile(this);
 
+            /*
+            player.javaのupdateメソッドでやってくれるので
+            ↓はいらないかも？
+            
             // --- 【変更】キーの状態に応じて座標を更新する ---
             if (keyH.upPressed) {
-                playerY -= playerSpeed; // 上に行くとY座標は減る
+                //playerY -= playerSpeed; // 上に行くとY座標は減る
+                player.y -= player.speed; // 上に行くとY座標は減る
             }
             if (keyH.downPressed) {
-                playerY += playerSpeed; // 下に行くとY座標は増える
+                //playerY += playerSpeed; // 下に行くとY座標は増える
+                player.y += player.speed; // 下に行くとY座標は増える
             }
             if (keyH.leftPressed) {
-                playerX -= playerSpeed; // 左に行くとX座標は減る
-                direction = "left"; // ★左向き
+                //playerX -= playerSpeed; // 左に行くとX座標は減る
+                //direction = "left"; // ★左向き
+
+                player.x -= player.speed; // 左に行くとX座標は減る
+                player.direction = "left"; // ★左向き
             }
             if (keyH.rightPressed) {
-                playerX += playerSpeed; // 右に行くとX座標は増える
-                direction = "right"; // ★右向き
-            }
+                //playerX += playerSpeed; // 右に行くとX座標は増える
+                //direction = "right"; // ★右向き
 
+                player.x += player.speed; // 右に行くとX座標は増える
+                player.direction = "right"; // ★右向き
+            }
+            
             // 2. 【追加】画面外へのハミ出しをチェックして補正する
             // 四角形のサイズ（paintComponentで指定している 48x48）
+            if (player.x < 0) { player.x = 0;}
+            if (player.x > screenWidth - tileSize) { player.x = screenWidth - tileSize;}
+            if(player.y < 0) { player.y = 0;}
+            if(player.y > screenHeight - tileSize) { player.y = screenHeight - tileSize;}
 
+            */
+
+            /*
             // 左端のチェック
             if (playerX < 0) {
                 playerX = 0;
@@ -181,6 +208,8 @@ public class GamePanel extends JPanel implements Runnable {
             if (playerY > screenHeight - tileSize) {
                 playerY = screenHeight - tileSize;
             }
+            */
+            player.update();
 
             // --- 【追加】敵のデータを更新 ---
             slime.update();
@@ -213,7 +242,8 @@ public class GamePanel extends JPanel implements Runnable {
                     if (commandNum == 0) {
                         // 【たたかう】を選んだ場合
                         //System.out.println("たたかう を選択：敵にダメージ！");
-                        int damage = playerAttack - slime.defense;
+                        //int damage = playerAttack - slime.defense;
+                        int damage = player.attack - slime.defense;
                         if (damage < 1) damage = 1;
                         slime.hp -= damage;
 
@@ -221,7 +251,9 @@ public class GamePanel extends JPanel implements Runnable {
                         if(slime.hp < 0) slime.hp = 0;
                         
                         // 画面に表示するメッセージをセット
-                        combatMessage = playerName + " の攻撃！ " + slime.name + " に " + damage + " のダメージ！";
+                        //combatMessage = playerName + " の攻撃！ " + slime.name + " に " + damage + " のダメージ！";
+                        combatMessage = player.name + " の攻撃！ " + slime.name + " に " + damage + " のダメージ！";
+
                         combatPhase = 1; // メッセージ表示フェーズへ移行
 
                     } else if (commandNum == 1) {
@@ -280,9 +312,15 @@ public class GamePanel extends JPanel implements Runnable {
             // 1. マップを描く
             tileM.draw(g2);
 
+            // プレイヤーを描く
+            player.draw(g2);
+
             // --- 【追加】2. 敵を描く(スライム) ---
             slime.draw(g2);
 
+            /*
+            player.javaに移行
+            
             // プレイヤーを描く
             // --- 【変更】プレイヤーを白い四角形からドット絵画像に変更 ---
             if(playerImage != null) {
@@ -301,6 +339,7 @@ public class GamePanel extends JPanel implements Runnable {
                 g2.setColor(Color.WHITE);
                 g2.fillRect(playerX, playerY, tileSize, tileSize); // 白い四角形
             }
+            */
         
         } else if (gameState == combatState) {
             // --- 戦闘画面の描画 ---
@@ -356,8 +395,8 @@ public class GamePanel extends JPanel implements Runnable {
     public void checkMonsterCollision() {
         
         // プレイヤーの現在の当たり判定四角形を作成
-        java.awt.Rectangle pRect = new java.awt.Rectangle(playerX + playerSolidArea.x, playerY + playerSolidArea.y, playerSolidArea.width, playerSolidArea.height);
-        
+        //java.awt.Rectangle pRect = new java.awt.Rectangle(playerX + playerSolidArea.x, playerY + playerSolidArea.y, playerSolidArea.width, playerSolidArea.height);
+        java.awt.Rectangle pRect = new java.awt.Rectangle(player.x + player.solidArea.x, player.y + player.solidArea.y, player.solidArea.width, player.solidArea.height);
         // 敵の現在の当たり判定四角形を作成
         java.awt.Rectangle mRect = new java.awt.Rectangle(slime.x + slime.solidArea.x, slime.y + slime.solidArea.y, slime.solidArea.width, slime.solidArea.height);
 
@@ -373,6 +412,10 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
+    /*
+    削除
+    player.javaに移行
+   
     public void getPlayerImage() {
         try {
             // resフォルダから画像を読み込む
@@ -399,4 +442,5 @@ public class GamePanel extends JPanel implements Runnable {
             e.printStackTrace();
         }
     }
+    */
 }
